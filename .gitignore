@@ -1,0 +1,34 @@
+# Build and CMake files
+/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.user
+*.autosave
+
+# Qt Creator/CLion/VSCode project files
+*.pro.user*
+*.qbs.user*
+*.idea/
+.vscode/
+
+# Compiled binaries and objects
+*.o
+*.obj
+*.so
+*.dll
+*.exe
+*.app
+usd_console_tool
+usd_console_tool_autogen/
+
+# MacOS
+.DS_Store
+
+# Python cache (if any scripts)
+__pycache__/
+*.pyc
+
+# Misc
+*.log
