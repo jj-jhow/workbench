@@ -22,19 +22,29 @@ set(USD_ROOT "/home/jonathan/usd")
 list(APPEND CMAKE_PREFIX_PATH "${USD_ROOT}" "${USD_ROOT}/lib/cmake" "${USD_ROOT}/lib/cmake/TBB")
 find_package(pxr REQUIRED CONFIG PATHS "${USD_ROOT}")
 
-include_directories(${pxr_INCLUDE_DIRS} /home/jonathan/usd/include)
-link_directories(${pxr_LIBRARY_DIRS})
+
 add_definitions(${pxr_DEFINITIONS})
 
 
 set(SOURCES
 	src/main.cpp
 	src/mainwindow.cpp
+	src/primtreeview.cpp
+	src/propertytableview.cpp
 )
 set(HEADERS
 	src/mainwindow.h
+	src/primtreeview.h
+	src/propertytableview.h
 )
+
 add_executable(usd_console_tool ${SOURCES} ${HEADERS})
+target_include_directories(usd_console_tool PRIVATE
+	${pxr_INCLUDE_DIRS}
+	/home/jonathan/usd/include
+	${Python3_INCLUDE_DIRS}
+)
+link_directories(${pxr_LIBRARY_DIRS})
 
 # Ensure linker can find all USD libraries
 link_directories(${pxr_LIBRARY_DIRS})

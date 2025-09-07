@@ -1,7 +1,8 @@
 
 #pragma once
 #include <QMainWindow>
-#include <QTreeWidget>
+#include "primtreeview.h"
+#include "propertytableview.h"
 #include <pxr/usd/usd/stage.h>
 
 class MainWindow : public QMainWindow
@@ -11,8 +12,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
 
 private:
-    QTreeWidget* primTree;
+    PrimTreeView *primTree;
+    PropertyTableView *propertyTable;
     pxr::UsdStageRefPtr currentStage;
-    void PopulatePrimTree();
-    void AddPrimToTree(const pxr::UsdPrim& prim, QTreeWidgetItem* parentItem = nullptr);
 };
