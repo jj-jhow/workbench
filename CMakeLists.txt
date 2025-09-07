@@ -31,11 +31,13 @@ set(SOURCES
 	src/mainwindow.cpp
 	src/primtreeview.cpp
 	src/propertytableview.cpp
+	src/usdviewport.cpp
 )
 set(HEADERS
 	src/mainwindow.h
 	src/primtreeview.h
 	src/propertytableview.h
+	src/usdviewport.h
 )
 
 add_executable(usd_console_tool ${SOURCES} ${HEADERS})

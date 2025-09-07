@@ -14,5 +14,6 @@ public:
 private:
     PrimTreeView *primTree;
     PropertyTableView *propertyTable;
+    class UsdViewport *usdViewport;
     pxr::UsdStageRefPtr currentStage;
 };
