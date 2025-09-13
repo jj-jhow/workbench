@@ -37,17 +37,8 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 # --- OpenUSD Setup ---
 find_package(pxr REQUIRED CONFIG)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PXR_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE usd)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PXR_INCLUDE_DIRS})
-
-# --- oneTBB Setup ---
-find_package(TBB REQUIRED CONFIG)
-target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
-
-# --- OpenSubdiv Setup ---
-find_package(OpenSubdiv REQUIRED CONFIG)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${TBB_DIR})
-target_include_directories(${PROJECT_NAME} PRIVATE ${TBB_DIR})
 
 # --- Qt Setup ---
 set(CMAKE_AUTOMOC ON)
