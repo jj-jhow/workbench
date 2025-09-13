@@ -1,58 +1,68 @@
-# Force use of custom oneTBB install
-set(TBB_ROOT "/usr/local")
-list(APPEND CMAKE_PREFIX_PATH "${TBB_ROOT}/lib/cmake/TBB")
-link_directories("${TBB_ROOT}/lib")
-include_directories("${TBB_ROOT}/include")
-# Enable Qt meta-object compiler (moc) and UI compiler (uic)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-# Find Qt5 Widgets
-list(APPEND CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/cmake/Qt5")
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 cmake_minimum_required(VERSION 3.15)
-project(usd_console_tool)
 
-# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set USD root directory
-set(USD_ROOT "/home/jonathan/repos/OpenUSD/install")
+# Force GCC 11
+set(CMAKE_C_COMPILER "/usr/bin/gcc-11")
+set(CMAKE_CXX_COMPILER "/usr/bin/g++-11")
 
-
-# Add USD's CMake config path for bundled dependencies like TBB
-list(APPEND CMAKE_PREFIX_PATH "${USD_ROOT}" "${USD_ROOT}/lib/cmake" "${USD_ROOT}/lib/cmake/TBB")
-find_package(pxr REQUIRED CONFIG PATHS "${USD_ROOT}")
-
-
-add_definitions(${pxr_DEFINITIONS})
-
+project(workbench VERSION 0.0.1 LANGUAGES CXX)
 
 set(SOURCES
-	src/main.cpp
-	src/mainwindow.cpp
-	src/primtreeview.cpp
-	src/propertytableview.cpp
-	src/usdviewport.cpp
-)
-set(HEADERS
-	src/mainwindow.h
-	src/primtreeview.h
-	src/propertytableview.h
-	src/usdviewport.h
+	src/private/main.cpp
+	src/private/StageManager.cpp
+	src/private/converters/ConverterFactory.cpp
+	src/private/converters/FbxToUsdConverter.cpp
+	src/private/converters/UsdToFbxConverter.cpp
 )
 
-add_executable(usd_console_tool ${SOURCES} ${HEADERS})
-target_include_directories(usd_console_tool PRIVATE
-	${pxr_INCLUDE_DIRS}
-	/home/jonathan/repos/OpenUSD/install/include
-	)
-# Ensure linker can find all USD libraries
-link_directories(${pxr_LIBRARY_DIRS})
-target_link_libraries(usd_console_tool
-	Qt5::Widgets
-	${pxr_LIBRARIES}
-	usd tf arch plug kind js work tbb
-	Python3::Python
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/private
+    ${CMAKE_SOURCE_DIR}/src/public
 )
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+
+# Set rpath for build and install so the binary in bin/ finds OpenUSD libs
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	BUILD_RPATH "${OPENUSD_LIB_DIR}"
+	INSTALL_RPATH "${OPENUSD_LIB_DIR}"
+	INSTALL_RPATH_USE_LINK_PATH TRUE
+)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+
+# --- OpenUSD Setup ---
+find_package(pxr REQUIRED CONFIG)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PXR_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${PXR_INCLUDE_DIRS})
+
+# --- oneTBB Setup ---
+find_package(TBB REQUIRED CONFIG)
+target_link_libraries(${PROJECT_NAME} PRIVATE TBB::tbb)
+
+# --- OpenSubdiv Setup ---
+find_package(OpenSubdiv REQUIRED CONFIG)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${TBB_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${TBB_DIR})
+
+# --- Qt Setup ---
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Gui_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS})
+
+# --- FBX SDK Setup ---
+# set(FBX_SDK_ROOT "/Applications/Autodesk/FBX SDK/2020.3.7")
+# set(FBX_SDK_INCLUDE_DIR "${FBX_SDK_ROOT}/include")
+# set(FBX_SDK_LIB_DIR "${FBX_SDK_ROOT}/lib/clang/debug")
+
+# target_include_directories(${PROJECT_NAME} PRIVATE ${FBX_SDK_INCLUDE_DIR})
+# target_link_directories(${PROJECT_NAME} PRIVATE ${FBX_SDK_LIB_DIR})
+# target_link_libraries(${PROJECT_NAME} PRIVATE fbxsdk)
