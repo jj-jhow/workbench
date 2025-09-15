@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
-#include "converters/IConverter.h"
+#include "IConverter.h"
 
 namespace converters
 {

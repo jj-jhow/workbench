@@ -1,10 +1,10 @@
 #pragma once
-#include "converters/IConverter.h"
+#include "IConverter.h"
 
 namespace converters
 {
 
-    class UsdToFbxConverter : public IConverter
+    class FbxToUsdConverter : public IConverter
     {
     public:
         bool Convert(const std::string &inputPath, const std::string &outputPath) override;
