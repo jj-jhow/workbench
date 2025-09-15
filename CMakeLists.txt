@@ -15,9 +15,13 @@ set(SOURCES
 	src/private/converters/ConverterFactory.cpp
 	src/private/converters/FbxToUsdConverter.cpp
 	src/private/converters/UsdToFbxConverter.cpp
+	src/private/gui/MainWindow.cpp
 )
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+# Enable MOC for Qt (Qt's Meta-Object Compiler)
+set(CMAKE_AUTOMOC ON)
+
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/src/private
@@ -33,6 +37,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	INSTALL_RPATH_USE_LINK_PATH TRUE
 )
 
+
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 # --- OpenUSD Setup ---
@@ -41,12 +46,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE usd)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PXR_INCLUDE_DIRS})
 
 # --- Qt Setup ---
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+# Fix Qt/TBB 'emit' conflict
+add_definitions(-DQT_NO_EMIT)
 
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${Qt5Core_LIBRARIES} ${Qt5Widgets_LIBRARIES} ${Qt5Gui_LIBRARIES})
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Widgets Qt5::Gui)
 target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Core_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS})
 
 # --- FBX SDK Setup ---
