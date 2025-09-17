@@ -15,15 +15,13 @@ bool StageManager::LoadStage(const std::string &path)
     return true;
 }
 
-bool StageManager::SaveStage(const std::string &path)
-{
+bool StageManager::SaveStage(const std::string &path) const {
     if (!stage_)
         return false;
     std::string savePath = path.empty() ? loadedPath_ : path;
     if (savePath.empty())
         return false;
-    stage_->GetRootLayer()->Export(savePath);
-    return true;
+    return stage_->GetRootLayer()->Export(savePath);
 }
 
 pxr::UsdStageRefPtr StageManager::GetStage() const

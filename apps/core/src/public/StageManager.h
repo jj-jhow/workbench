@@ -10,7 +10,7 @@ public:
     bool LoadStage(const std::string &path);
 
     // Saves the current stage to file. Returns true on success.
-    bool SaveStage(const std::string &path = "");
+    bool SaveStage(const std::string &path = "") const;
 
     // Returns a shared pointer to the current stage.
     pxr::UsdStageRefPtr GetStage() const;

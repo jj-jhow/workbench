@@ -5,6 +5,7 @@ add_library(workbench_core STATIC
 	src/private/converters/ConverterFactory.cpp
 	src/private/converters/FbxToUsdConverter.cpp
 	src/private/converters/UsdToFbxConverter.cpp
+	src/private/importers/FbxImporter.cpp
 	src/private/StageManager.cpp
 
 )
@@ -29,7 +30,21 @@ target_include_directories(workbench_core
 # --- Dependencies ---
 # Link this library to its external dependencies.
 find_package(pxr REQUIRED CONFIG)
-target_link_libraries(workbench_core PUBLIC usd)
+# Define the path to your FBX SDK installation
+set(FBX_SDK_PATH "/opt/fbx202037_fbxsdk_linux")
+target_include_directories( workbench_core
+	PUBLIC
+	${FBX_SDK_PATH}/include
+)
+
+# Include the fbxsdk.cmake script to set up the FBX SDK targets
+include(${FBX_SDK_PATH}/samples/fbxsdk.cmake)
+
+target_link_libraries(workbench_core
+		PUBLIC
+		usd
+		fbxsdk
+)
 
 # --- Installation Rules ---
 # This section defines how to install this library.
