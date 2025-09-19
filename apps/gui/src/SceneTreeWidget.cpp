@@ -10,32 +10,40 @@ SceneTreeWidget::SceneTreeWidget(QWidget *parent)
     setHeaderLabel("Scene Tree");
 }
 
-void SceneTreeWidget::setStage(const pxr::UsdStageRefPtr& stage)
+void SceneTreeWidget::setStage(const pxr::UsdStageRefPtr &stage)
 {
     clear();
-    if (!stage) return;
-    auto rootPrim = stage->GetDefaultPrim();
+    if (!stage)
+        return;
+    auto rootPrim = stage->GetPseudoRoot();
     populateTree(rootPrim);
 }
 
-void SceneTreeWidget::populateTree(const pxr::UsdPrim& prim, QTreeWidgetItem* parentItem)
+void SceneTreeWidget::populateTree(const pxr::UsdPrim &prim, QTreeWidgetItem *parentItem)
 {
-    if (!prim) return;
+    if (!prim)
+        return;
     // Skip the pseudo-root itself, but process its children
-    // if (prim.IsPseudoRoot()) {
-    //     for (const auto& child : prim.GetChildren()) {
-    //         populateTree(child, nullptr);
-    //     }
-    //     return;
-    // }
-    auto* item = new QTreeWidgetItem();
+    if (prim.IsPseudoRoot())
+    {
+        for (const auto &child : prim.GetChildren())
+        {
+            populateTree(child, nullptr);
+        }
+        return;
+    }
+    auto *item = new QTreeWidgetItem();
     item->setText(0, QString::fromStdString(prim.GetName().GetString()));
-    if (parentItem) {
+    if (parentItem)
+    {
         parentItem->addChild(item);
-    } else {
+    }
+    else
+    {
         addTopLevelItem(item);
     }
-    for (const auto& child : prim.GetChildren()) {
+    for (const auto &child : prim.GetChildren())
+    {
         populateTree(child, item);
     }
 }
