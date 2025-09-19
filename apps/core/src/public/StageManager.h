@@ -18,6 +18,9 @@ public:
     // Returns true if a stage is loaded.
     bool HasStage() const;
 
+    // Clears the current stage.
+    void ClearStage();
+
 private:
     pxr::UsdStageRefPtr stage_;
     std::string loadedPath_;

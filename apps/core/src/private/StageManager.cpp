@@ -33,3 +33,9 @@ bool StageManager::HasStage() const
 {
     return static_cast<bool>(stage_);
 }
+
+void StageManager::ClearStage()
+{
+    stage_.Reset();
+    loadedPath_.clear();
+}

@@ -18,6 +18,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <QDockWidget>
+
 #include "converters/ConverterFactory.h"
 #include "SceneViewWidget.h"
 #include "SceneTreeWidget.h"
@@ -42,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     rightSplitter->setStretchFactor(0, 2); // Scene tree gets more space
     rightSplitter->setStretchFactor(1, 1); // Properties less
-    mainSplitter->setStretchFactor(0, 3); // Scene view wider
+    mainSplitter->setStretchFactor(0, 3);  // Scene view wider
     mainSplitter->setStretchFactor(1, 2);
 
     setCentralWidget(mainSplitter);
@@ -61,6 +63,10 @@ void MainWindow::createMenus()
     connect(convertAct, &QAction::triggered, this, &MainWindow::convertFile);
     fileMenu->addAction(convertAct);
 
+    closeStageAct = new QAction(tr("Close Stage"), this);
+    connect(closeStageAct, &QAction::triggered, this, &MainWindow::closeStage);
+    fileMenu->addAction(closeStageAct);
+
     fileMenu->addSeparator();
     exitAct = new QAction(tr("E&xit"), this);
     connect(exitAct, &QAction::triggered, this, &MainWindow::quitApp);
@@ -78,8 +84,6 @@ void MainWindow::createMenus()
 void MainWindow::createToolBar()
 {
     mainToolBar = addToolBar(tr("Main Toolbar"));
-    mainToolBar->addAction(openAct);
-    mainToolBar->addAction(convertAct);
 }
 
 void MainWindow::createStatusBar()
@@ -93,7 +97,10 @@ void MainWindow::createLogWindow()
 {
     logOutput = new QTextEdit(this);
     logOutput->setReadOnly(true);
-    setCentralWidget(logOutput);
+    QDockWidget *logDock = new QDockWidget(tr("Log"), this);
+    logDock->setWidget(logOutput);
+    logDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+    addDockWidget(Qt::BottomDockWidgetArea, logDock);
 }
 
 void MainWindow::logMessage(const QString &msg)
@@ -111,11 +118,26 @@ void MainWindow::openUsdFile()
     if (stageManager->LoadStage(fileName.toStdString()))
     {
         logMessage(tr("Loaded USD stage: %1").arg(fileName));
+        sceneTreeWidget->setStage(stageManager->GetStage());
     }
     else
     {
         logMessage(tr("Failed to load USD stage: %1").arg(fileName));
         QMessageBox::warning(this, tr("Error"), tr("Failed to load USD stage."));
+    }
+}
+
+void MainWindow::closeStage()
+{
+    if (stageManager->HasStage())
+    {
+        stageManager->ClearStage();
+        sceneTreeWidget->clear();
+        logMessage(tr("Closed current USD stage."));
+    }
+    else
+    {
+        logMessage(tr("No USD stage to close."));
     }
 }
 

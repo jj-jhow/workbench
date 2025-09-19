@@ -30,10 +30,6 @@ target_include_directories( workbench_core
         ${CMAKE_CURRENT_SOURCE_DIR}/src/public
         ${PXR_INCLUDE_DIRS}
         ${FBX_SDK_PATH}/include
-        # $<BUILD_INTERFACE:...> is for the build tree.
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/public>
-        # $<INSTALL_INTERFACE:...> is for after installation.
-        $<INSTALL_INTERFACE:include>
 )
 
 # Include the fbxsdk.cmake script to set up the FBX SDK targets

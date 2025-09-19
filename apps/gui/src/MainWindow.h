@@ -24,6 +24,7 @@ public:
 
 private slots:
     void openUsdFile();
+    void closeStage();
     void convertFile();
     void showHelp();
     void showAbout();
@@ -40,6 +41,7 @@ private:
     QMenu *helpMenu;
     QToolBar *mainToolBar;
     QAction *openAct;
+    QAction *closeStageAct;
     QAction *convertAct;
     QAction *exitAct;
     QAction *helpAct;
