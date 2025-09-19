@@ -2,7 +2,7 @@ set(CMAKE_AUTOMOC ON) # Needed for Qt signals/slots
 
 # --- Dependencies ---
 # You will also need to find Qt packages here
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets OpenGL REQUIRED)
 
 # Define the executable target and its source files.
 add_executable(workbench_gui
@@ -11,6 +11,7 @@ add_executable(workbench_gui
     src/SceneViewWidget.cpp
     src/SceneTreeWidget.cpp
     src/PrimPropertiesWidget.cpp
+    src/render/HydraRenderer.cpp
     # Add other source files for the GUI here
 )
 
@@ -20,6 +21,7 @@ target_include_directories(workbench_gui
         ${Qt5Widgets_INCLUDE_DIRS}
         ${Qt5Core_INCLUDE_DIRS}
         ${Qt5Gui_INCLUDE_DIRS}
+        ${Qt5OpenGL_INCLUDE_DIRS}
 )
 
 # This is where the magic happens. We link our application to the library
@@ -35,6 +37,7 @@ target_link_libraries(workbench_gui
         Qt5::Widgets
         Qt5::Core
         Qt5::Gui
+        Qt5::OpenGL
 )
 
 

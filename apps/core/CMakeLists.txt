@@ -18,6 +18,8 @@ add_library(workbench_core STATIC
 # --- Dependencies ---
 # Link this library to its external dependencies.
 find_package(pxr REQUIRED CONFIG)
+find_package(Threads REQUIRED)
+find_package(OpenGL REQUIRED)
 
 # Define the path to your FBX SDK installation
 set(FBX_SDK_PATH "/opt/fbx202037_fbxsdk_linux")
@@ -39,6 +41,7 @@ target_link_libraries(workbench_core
     PUBLIC
         usd
         fbxsdk
+        usdImagingGL
 )
 
 # --- Installation Rules ---
