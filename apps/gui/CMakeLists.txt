@@ -8,6 +8,9 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 add_executable(workbench_gui
     src/main.cpp
     src/MainWindow.cpp
+    src/SceneViewWidget.cpp
+    src/SceneTreeWidget.cpp
+    src/PrimPropertiesWidget.cpp
     # Add other source files for the GUI here
 )
 

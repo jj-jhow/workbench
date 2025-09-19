@@ -1,7 +1,11 @@
 #pragma once
 #include <QMainWindow>
 #include <memory>
+#include <QSplitter>
 #include "StageManager.h"
+#include "SceneViewWidget.h"
+#include "SceneTreeWidget.h"
+#include "PrimPropertiesWidget.h"
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -45,4 +49,11 @@ private:
 
     std::unique_ptr<StageManager> stageManager;
     QString lastOpenedFile;
+
+    // Splitter-based UI components
+    QSplitter *mainSplitter;
+    QSplitter *rightSplitter;
+    SceneViewWidget *sceneViewWidget;
+    SceneTreeWidget *sceneTreeWidget;
+    PrimPropertiesWidget *primPropertiesWidget;
 };

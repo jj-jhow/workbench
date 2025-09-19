@@ -19,6 +19,9 @@
 #include <fstream>
 
 #include "converters/ConverterFactory.h"
+#include "SceneViewWidget.h"
+#include "SceneTreeWidget.h"
+#include "PrimPropertiesWidget.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), stageManager(std::make_unique<StageManager>())
@@ -29,6 +32,20 @@ MainWindow::MainWindow(QWidget *parent)
     createLogWindow();
     setWindowTitle("USD Workbench");
     resize(800, 600);
+
+    // --- Splitter-based UI setup ---
+    mainSplitter = new QSplitter(Qt::Horizontal, this);
+    sceneViewWidget = new SceneViewWidget(mainSplitter);
+    rightSplitter = new QSplitter(Qt::Vertical, mainSplitter);
+    sceneTreeWidget = new SceneTreeWidget(rightSplitter);
+    primPropertiesWidget = new PrimPropertiesWidget(rightSplitter);
+
+    rightSplitter->setStretchFactor(0, 2); // Scene tree gets more space
+    rightSplitter->setStretchFactor(1, 1); // Properties less
+    mainSplitter->setStretchFactor(0, 3); // Scene view wider
+    mainSplitter->setStretchFactor(1, 2);
+
+    setCentralWidget(mainSplitter);
 }
 
 MainWindow::~MainWindow() {}
