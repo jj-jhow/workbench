@@ -48,6 +48,9 @@ MainWindow::MainWindow(QWidget *parent)
     mainSplitter->setStretchFactor(1, 2);
 
     setCentralWidget(mainSplitter);
+
+    connect(sceneTreeWidget, &SceneTreeWidget::primSelected,
+            primPropertiesWidget, &PrimPropertiesWidget::setPrim);
 }
 
 MainWindow::~MainWindow() {}
