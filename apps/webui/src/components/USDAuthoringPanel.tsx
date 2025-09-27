@@ -119,6 +119,22 @@ const USDAuthoringPanel: React.FC<USDAuthoringPanelProps> = () => {
             </div>
 
             <div className="control-group">
+                <label>Import USDZ File</label>
+                <input
+                    type="file"
+                    accept=".usdz,.usd"
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            // TODO: Integrate with WASM OpenUSD for actual parsing
+                            console.log('Selected USDZ file:', file.name);
+                            alert(`USDZ file selected: ${file.name}\nWASM OpenUSD integration needed for parsing.`);
+                        }
+                    }}
+                />
+            </div>
+
+            <div className="control-group">
                 <label>WASM Integration Status</label>
                 <div style={{
                     padding: '10px',
@@ -128,7 +144,8 @@ const USDAuthoringPanel: React.FC<USDAuthoringPanelProps> = () => {
                     color: '#ccc'
                 }}>
                     OpenUSD WASM: Not loaded<br />
-                    Status: Ready for integration
+                    USDZ Loader: Ready for integration<br />
+                    Status: Placeholder implementation
                 </div>
             </div>
         </div>

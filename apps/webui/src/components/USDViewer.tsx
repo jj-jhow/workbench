@@ -1,7 +1,8 @@
 import React, { useState, useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Box, Sphere, Cone } from '@react-three/drei';
-import { Mesh } from 'three';
+import { Mesh, Group } from 'three';
+import USDZFileLoader from './USDZLoader';
 
 interface Camera {
     id: string;
@@ -51,13 +52,12 @@ const Scene: React.FC = () => {
 };
 
 const USDViewer: React.FC = () => {
+    const [loadedUSDZ, setLoadedUSDZ] = useState<Group | null>(null);
     const [cameras] = useState<Camera[]>([
         { id: '1', name: 'Main Camera', position: [5, 5, 5], target: [0, 0, 0] },
         { id: '2', name: 'Close-up Camera', position: [2, 2, 2], target: [0, 0, 0] },
         { id: '3', name: 'Top View', position: [0, 10, 0], target: [0, 0, 0] }
-    ]);
-
-    const [animations] = useState<Animation[]>([
+    ]); const [animations] = useState<Animation[]>([
         { id: '1', name: 'Rotation', duration: 3.0, isPlaying: false },
         { id: '2', name: 'Scale Pulse', duration: 2.0, isPlaying: false },
         { id: '3', name: 'Position Float', duration: 4.0, isPlaying: false }
@@ -98,7 +98,15 @@ const USDViewer: React.FC = () => {
         console.log('Switch to LOD:', lodId);
     };
 
-    return (
+    const handleUSDZLoad = (object: Group) => {
+        console.log('USDZ loaded in viewer:', object);
+        setLoadedUSDZ(object);
+    };
+
+    const handleUSDZError = (error: Error) => {
+        console.error('USDZ loading error:', error);
+        alert(`USDZ Loading Error: ${error.message}`);
+    }; return (
         <div className="viewer-panel">
             <Canvas camera={{ position: [5, 5, 5], fov: 75 }}>
                 <Suspense fallback={null}>
@@ -151,6 +159,10 @@ const USDViewer: React.FC = () => {
                     ))}
                 </div>
 
+                <div>
+                    <USDZFileLoader onLoad={handleUSDZLoad} onError={handleUSDZError} />
+                </div>
+
                 <div style={{
                     marginTop: '20px',
                     padding: '10px',
@@ -159,8 +171,8 @@ const USDViewer: React.FC = () => {
                     fontSize: '12px'
                 }}>
                     <strong>USDZ Status:</strong><br />
-                    No file loaded<br />
-                    <em>Showing sample Three.js scene</em>
+                    {loadedUSDZ ? `Loaded: ${loadedUSDZ.name || 'USDZ Model'}` : 'No file loaded'}<br />
+                    <em>{loadedUSDZ ? 'USDZ model active' : 'Showing sample Three.js scene'}</em>
                 </div>
             </div>
         </div>
