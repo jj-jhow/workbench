@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 
 interface USDAuthoringPanelProps {
-    // Props will be added as we integrate with WASM OpenUSD
+    mode: 'viewing' | 'editing';
+    loadedUSDZ: any;
 }
 
 interface USDPrimitive {
@@ -11,8 +12,25 @@ interface USDPrimitive {
     properties: Record<string, any>;
 }
 
-const USDAuthoringPanel: React.FC<USDAuthoringPanelProps> = () => {
+const USDAuthoringPanel: React.FC<USDAuthoringPanelProps> = ({ mode, loadedUSDZ }) => {
     const [primitives, setPrimitives] = useState<USDPrimitive[]>([]);
+    const [wasmReady, setWasmReady] = useState(false);
+
+    React.useEffect(() => {
+        if (mode === 'editing' && loadedUSDZ) {
+            initializeWasmEditing();
+        }
+    }, [mode, loadedUSDZ]);
+
+    const initializeWasmEditing = async () => {
+        try {
+            // TODO: Initialize WASM module for USD editing
+            console.log('Initializing WASM for USD editing...', loadedUSDZ);
+            setWasmReady(true);
+        } catch (error) {
+            console.error('Failed to initialize WASM editing:', error);
+        }
+    };
     const [selectedPrimitive, setSelectedPrimitive] = useState<string | null>(null);
     const [primitiveName, setPrimitiveName] = useState('');
     const [primitiveType, setPrimitiveType] = useState<USDPrimitive['type']>('mesh');
@@ -143,9 +161,10 @@ const USDAuthoringPanel: React.FC<USDAuthoringPanelProps> = () => {
                     fontSize: '12px',
                     color: '#ccc'
                 }}>
-                    OpenUSD WASM: Not loaded<br />
-                    USDZ Loader: Ready for integration<br />
-                    Status: Placeholder implementation
+                    Mode: {mode}<br />
+                    OpenUSD WASM: {wasmReady ? '✅ Ready' : '⏳ Loading...'}<br />
+                    USDZ Status: {loadedUSDZ ? '✅ Loaded' : '❌ No file'}<br />
+                    Editing: {mode === 'editing' && wasmReady ? '✅ Active' : '❌ Disabled'}
                 </div>
             </div>
         </div>

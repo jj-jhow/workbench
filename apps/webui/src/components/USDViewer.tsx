@@ -4,6 +4,11 @@ import { OrbitControls, Grid, Box, Sphere, Cone } from '@react-three/drei';
 import { Mesh, Group } from 'three';
 import USDZFileLoader from './USDZLoader';
 
+interface USDViewerProps {
+    mode: 'viewing' | 'editing';
+    onUSDZLoad: (usdzData: any) => void;
+}
+
 interface Camera {
     id: string;
     name: string;
@@ -51,7 +56,7 @@ const Scene: React.FC = () => {
     );
 };
 
-const USDViewer: React.FC = () => {
+const USDViewer: React.FC<USDViewerProps> = ({ mode, onUSDZLoad }) => {
     const [loadedUSDZ, setLoadedUSDZ] = useState<Group | null>(null);
     const [cameras] = useState<Camera[]>([
         { id: '1', name: 'Main Camera', position: [5, 5, 5], target: [0, 0, 0] },
@@ -101,6 +106,7 @@ const USDViewer: React.FC = () => {
     const handleUSDZLoad = (object: Group) => {
         console.log('USDZ loaded in viewer:', object);
         setLoadedUSDZ(object);
+        onUSDZLoad(object); // Notify parent App component
     };
 
     const handleUSDZError = (error: Error) => {
@@ -171,6 +177,7 @@ const USDViewer: React.FC = () => {
                     fontSize: '12px'
                 }}>
                     <strong>USDZ Status:</strong><br />
+                    Mode: {mode === 'viewing' ? 'Viewing Only' : 'Editing Enabled'}<br />
                     {loadedUSDZ ? `Loaded: ${loadedUSDZ.name || 'USDZ Model'}` : 'No file loaded'}<br />
                     <em>{loadedUSDZ ? 'USDZ model active' : 'Showing sample Three.js scene'}</em>
                 </div>
