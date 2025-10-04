@@ -1,6 +1,11 @@
 #include "converters/ConverterFactory.h"
+
 #include "converters/FbxToUsdConverter.h"
 #include "converters/UsdToFbxConverter.h"
+#include "converters/ObjToUsdConverter.h"
+
+#include <filesystem>
+#include <cctype>
 
 namespace converters
 {
@@ -39,24 +44,51 @@ namespace converters
                                    { return std::make_unique<UsdToFbxConverter>(); });
     ConverterRegistrar usdaToFbxReg("usda2fbx", []()
                                     { return std::make_unique<UsdToFbxConverter>(); });
+    ConverterRegistrar objToUsdReg("obj2usd", []()
+                                   { return std::make_unique<ObjToUsdConverter>(); });
+    ConverterRegistrar objToUsdaReg("obj2usda", []()
+                                    { return std::make_unique<ObjToUsdConverter>(); });
 
     // Helper: get file extension (lowercase, no dot)
     static std::string GetFileExtension(const std::string &path)
     {
-        auto pos = path.find_last_of('.');
-        if (pos == std::string::npos || pos == path.length() - 1)
-            return "";
-        std::string ext = path.substr(pos + 1);
+        std::filesystem::path fsPath(path);
+        std::string ext = fsPath.extension().string();
+
+        // Remove the leading dot and convert to lowercase
+        if (!ext.empty() && ext[0] == '.')
+        {
+            ext = ext.substr(1);
+        }
+
+        // Convert to lowercase
         for (auto &c : ext)
-            c = static_cast<char>(tolower(c));
+        {
+            c = static_cast<char>(std::tolower(c));
+        }
+
         return ext;
     }
 
-    std::unique_ptr<IConverter> ConverterFactory::GetConverterFor(const std::string &inputPath, const std::string &outputFormat)
+    std::unique_ptr<IConverter> ConverterFactory::GetConverterFor(const std::filesystem::path &inputPath, const std::string &outputFormat)
     {
-        std::string inputExt = GetFileExtension(inputPath);
+        std::string inputExt = inputPath.extension().string();
+
+        // Remove the leading dot and convert to lowercase
+        if (!inputExt.empty() && inputExt[0] == '.')
+        {
+            inputExt = inputExt.substr(1);
+        }
+
+        // Convert to lowercase
+        for (auto &c : inputExt)
+        {
+            c = static_cast<char>(std::tolower(c));
+        }
+
         if (inputExt.empty() || outputFormat.empty())
             return nullptr;
+
         std::string type = inputExt + "2" + outputFormat;
         return Create(type);
     }

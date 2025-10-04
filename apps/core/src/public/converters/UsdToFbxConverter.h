@@ -7,7 +7,11 @@ namespace converters
     class UsdToFbxConverter : public IConverter
     {
     public:
-        bool Convert(const std::string &inputPath, const std::string &outputPath) override;
+        virtual bool Convert(const fs::path &inputPath, const fs::path &outputPath, const ConverterOptions &options) const override;
+
+    protected:
+        virtual pxr::UsdStageRefPtr Extract(const fs::path &inputPath, const fs::path &outputPath) const override;
+        virtual void Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const override;
     };
 
 } // namespace converters

@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <functional>
 #include <string>
+#include <filesystem>
 #include "IConverter.h"
 
 namespace converters
@@ -17,7 +18,7 @@ namespace converters
         std::unique_ptr<IConverter> Create(const std::string &type);
 
         // Helper: get converter by input file path and output format (e.g. "usd")
-        std::unique_ptr<IConverter> GetConverterFor(const std::string &inputPath, const std::string &outputFormat);
+        std::unique_ptr<IConverter> GetConverterFor(const std::filesystem::path &inputPath, const std::string &outputFormat);
 
     private:
         std::unordered_map<std::string, Creator> creators_;

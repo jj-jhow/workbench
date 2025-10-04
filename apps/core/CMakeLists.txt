@@ -8,7 +8,9 @@ endif(COMMAND cmake_policy)
 add_library(workbench_core STATIC
 	src/private/converters/ConverterFactory.cpp
 	src/private/converters/FbxToUsdConverter.cpp
+	src/private/converters/ObjToUsdConverter.cpp
 	src/private/converters/UsdToFbxConverter.cpp
+	src/private/converters/UpAxis.cpp
 	src/private/importers/FbxImporter.cpp
 	src/private/StageManager.cpp
 
@@ -16,13 +18,25 @@ add_library(workbench_core STATIC
 
 
 # --- Dependencies ---
+
+# Define the path to dependency installations
+set(FBX_SDK_PATH "/opt/fbx202037_fbxsdk_linux")
+set(CMAKE_PREFIX_PATH "/home/jonathan/repos/assimp/install" ${CMAKE_PREFIX_PATH})
+
 # Link this library to its external dependencies.
 find_package(pxr REQUIRED CONFIG)
 find_package(Threads REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(assimp REQUIRED)
 
-# Define the path to your FBX SDK installation
-set(FBX_SDK_PATH "/opt/fbx202037_fbxsdk_linux")
+if(pxr_FOUND)
+    message(STATUS "Found Pixar USD")
+    message(STATUS "pxr_DIR: ${pxr_DIR}")
+    message(STATUS "PXR_INCLUDE_DIRS: ${PXR_INCLUDE_DIRS}")
+    message(STATUS "PXR_LIBRARIES: ${PXR_LIBRARIES}")
+else()
+    message(FATAL_ERROR "Could not find Pixar USD. Please ensure it is installed and the PXR_INSTALL_PATH environment variable is set correctly.")
+endif()
 
 # --- Include Directories ---
 target_include_directories( workbench_core
@@ -40,8 +54,10 @@ include(${FBX_SDK_PATH}/samples/fbxsdk.cmake)
 target_link_libraries(workbench_core
     PUBLIC
         usd
+        usdGeom
         fbxsdk
         usdImagingGL
+        assimp::assimp
 )
 
 # --- Installation Rules ---
