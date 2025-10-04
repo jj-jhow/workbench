@@ -1,5 +1,6 @@
 # Build and CMake files
 **/build/
+**/install/
 **/bin/
 **/lib/
 **/CMakeFiles/
