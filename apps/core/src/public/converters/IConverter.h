@@ -3,6 +3,7 @@
 #include "UpAxis.h"
 
 #include <pxr/usd/usd/stage.h>
+#include <pxr/usd/usdShade/material.h>
 
 #include <string>
 #include <filesystem>

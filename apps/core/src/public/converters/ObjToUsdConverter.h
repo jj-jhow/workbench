@@ -3,6 +3,8 @@
 #include "IConverter.h"
 
 struct aiMesh;
+struct aiScene;
+struct aiMaterial;
 
 namespace converters
 {
@@ -16,7 +18,8 @@ namespace converters
         virtual void Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const override;
 
     private:
-        void ConvertMeshToUsd(const ::aiMesh *mesh, pxr::UsdStageRefPtr stage) const;
+        void ExtractMeshData(const aiMesh *mesh, const aiScene *scene, pxr::UsdStageRefPtr stage) const;
+        pxr::UsdShadeMaterial ExtractMaterialData(const aiMaterial *material, pxr::UsdStageRefPtr stage) const;
     };
 
 } // namespace converters

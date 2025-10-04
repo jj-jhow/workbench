@@ -3,6 +3,9 @@
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/mesh.h>
 #include <pxr/usd/usdGeom/metrics.h>
+#include <pxr/usd/usdShade/material.h>
+#include <pxr/usd/usdShade/shader.h>
+#include <pxr/usd/usdShade/materialBindingAPI.h>
 #include <pxr/base/tf/stringUtils.h>
 #include <pxr/base/tf/token.h>
 #include <pxr/base/vt/array.h>
@@ -12,8 +15,11 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
+#include <assimp/material.h>
+#include <assimp/types.h>
 
 #include <iostream>
+#include <cmath>
 
 namespace converters
 {
@@ -54,10 +60,10 @@ namespace converters
         // Using Assimp to read the OBJ file and extract the scene data before converting to USD
         const unsigned int importFlags = 0;
         Assimp::Importer importer;
-        const aiScene *scene = importer.ReadFile(inputPath.string(), importFlags);
+        const aiScene *scene = importer.ReadFile(inputPath.string(), importFlags); // NOTE: Do NOT delete scene - Assimp::Importer manages memory automatically
         if (!scene)
         {
-            std::cerr << "Failed to extract data from OBJ file: " << inputPath << std::endl;
+            std::cerr << "Failed to read data from OBJ file: " << inputPath << std::endl;
             return nullptr;
         }
 
@@ -69,8 +75,14 @@ namespace converters
             return nullptr;
         }
 
+        if (!scene->HasMeshes())
+        {
+            std::cerr << "Warning: No meshes found in OBJ file: " << inputPath << std::endl;
+            return stage;
+        }
+
         // The actual data conversion from aiScene to USD
-        aiMesh * const *meshes = scene->mMeshes;
+        aiMesh *const *meshes = scene->mMeshes;
         for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
         {
             aiMesh const *mesh = meshes[i];
@@ -81,10 +93,9 @@ namespace converters
             }
 
             // Convert each mesh to a USD mesh
-            ConvertMeshToUsd(mesh, stage);
+            ExtractMeshData(mesh, scene, stage);
         }
 
-        // NOTE: Do NOT delete scene - Assimp::Importer manages memory automatically
         return stage;
     }
 
@@ -104,9 +115,9 @@ namespace converters
         pxr::UsdGeomSetStageUpAxis(stage, upAxisToken);
     }
 
-    void ObjToUsdConverter::ConvertMeshToUsd(const ::aiMesh *mesh, pxr::UsdStageRefPtr stage) const
+    void ObjToUsdConverter::ExtractMeshData(const aiMesh *mesh, const aiScene *scene, pxr::UsdStageRefPtr stage) const
     {
-        if (!mesh || !stage)
+        if (!mesh || !stage || !scene)
         {
             std::cerr << "Invalid mesh or stage for conversion." << std::endl;
             return;
@@ -162,6 +173,84 @@ namespace converters
             usdMesh.CreateNormalsAttr().Set(normals);
         }
 
+        // Extract mesh's material data
+        if (scene->HasMaterials() && mesh->mMaterialIndex < scene->mNumMaterials)
+        {
+            const aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
+            if (material)
+            {
+                std::cout << "Extracting material for mesh: " << meshName << std::endl;
+                // Extract material properties as needed
+                pxr::UsdShadeMaterial usdMaterial = ExtractMaterialData(material, stage);
+                if (usdMaterial)
+                {
+                    pxr::UsdShadeMaterialBindingAPI bindingAPI = pxr::UsdShadeMaterialBindingAPI::Apply(usdMesh.GetPrim());
+                    bindingAPI.Bind(usdMaterial);
+                    std::cout << "Bound material to mesh: " << meshName << std::endl;
+                }
+                else
+                {
+                    std::cerr << "Failed to extract material for mesh: " << meshName << std::endl;
+                }
+            }
+        }
+
         std::cout << "Converted mesh: " << meshName << " with " << mesh->mNumVertices << " vertices and " << mesh->mNumFaces << " faces." << std::endl;
     }
+
+    pxr::UsdShadeMaterial ObjToUsdConverter::ExtractMaterialData(const aiMaterial *material, pxr::UsdStageRefPtr stage) const
+    {
+        if (!material || !stage)
+        {
+            std::cerr << "Invalid material or stage for conversion." << std::endl;
+            return pxr::UsdShadeMaterial();
+        }
+
+        aiString matName;
+        if (material->Get(AI_MATKEY_NAME, matName) != AI_SUCCESS)
+        {
+            std::cerr << "Failed to get material name." << std::endl;
+            return pxr::UsdShadeMaterial();
+        }
+
+        std::string materialName = pxr::TfMakeValidIdentifier(matName.C_Str());
+        pxr::SdfPath materialPath = pxr::SdfPath("/Materials/" + materialName);
+
+        pxr::UsdShadeMaterial usdMaterial = pxr::UsdShadeMaterial::Define(stage, materialPath);
+        pxr::UsdShadeShader shader = pxr::UsdShadeShader::Define(stage, materialPath.AppendChild(pxr::TfToken("shader")));
+
+        shader.CreateIdAttr(pxr::VtValue(pxr::TfToken("UsdPreviewSurface")));
+        usdMaterial.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), pxr::TfToken("surface"));
+
+        shader.CreateInput(pxr::TfToken("useSpecularWorkflow"), pxr::SdfValueTypeNames->Int).Set(pxr::VtValue(1));
+
+        // Extract diffuse color
+        aiColor3D diffuseColor;
+        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == AI_SUCCESS)
+        {
+            shader.CreateInput(pxr::TfToken("diffuseColor"), pxr::SdfValueTypeNames->Color3f).Set(pxr::VtValue(pxr::GfVec3f(diffuseColor.r, diffuseColor.g, diffuseColor.b)));
+        }
+        // Extract Emissive color
+        aiColor3D emissiveColor;
+        if (material->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor) == AI_SUCCESS)
+        {
+            shader.CreateInput(pxr::TfToken("emissiveColor"), pxr::SdfValueTypeNames->Color3f).Set(pxr::VtValue(pxr::GfVec3f(emissiveColor.r, emissiveColor.g, emissiveColor.b)));
+        }
+        // Extract specular color
+        aiColor3D specularColor;
+        if (material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor) == AI_SUCCESS)
+        {
+            shader.CreateInput(pxr::TfToken("specularColor"), pxr::SdfValueTypeNames->Color3f).Set(pxr::VtValue(pxr::GfVec3f(specularColor.r, specularColor.g, specularColor.b)));
+        }
+        // Extract shininess
+        float shininess = 0.0f;
+        if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS)
+        {
+            const float roughness = 1.0f - std::sqrt(shininess / 1000.0f);
+            shader.CreateInput(pxr::TfToken("roughness"), pxr::SdfValueTypeNames->Float).Set(pxr::VtValue(roughness)); // Roughness is inverse of shininess
+        }
+
+        return usdMaterial;
+    }
+
 } // namespace converters
