@@ -11,6 +11,7 @@ add_library(workbench_core STATIC
 	src/private/converters/ObjToUsdConverter.cpp
 	src/private/converters/UsdToFbxConverter.cpp
 	src/private/converters/UpAxis.cpp
+	src/private/converters/LinearUnit.cpp
 	src/private/importers/FbxImporter.cpp
 	src/private/StageManager.cpp
 

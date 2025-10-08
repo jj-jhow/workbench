@@ -6,6 +6,7 @@
 
 #include "converters/ConverterFactory.h"
 #include "converters/UpAxis.h"
+#include "converters/LinearUnit.h"
 
 using namespace converters;
 namespace fs = std::filesystem;
@@ -28,6 +29,8 @@ void printUsage(const char *programName)
     std::cout << "  -o, --output OUTPUT   Specify an output USD file\n";
     std::cout << "  -u, --up-axis AXIS    Specify the up axis for the exported USD stage.\n";
     std::cout << "                        Valid values: " << UpAxisParser::getValidValues() << " (default: y)\n";
+    std::cout << "  -m, --meters-per-unit UNIT Specify the unit for measurements in the USD stage.\n";
+    std::cout << "                        Valid values: " << LinearUnitParser::getValidValues() << " (default: meters)\n";
     std::cout << "  -h, --help           Show this help message and exit\n";
 }
 

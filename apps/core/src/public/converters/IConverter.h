@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UpAxis.h"
+#include "LinearUnit.h"
 
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdShade/material.h>
@@ -15,6 +16,7 @@ namespace converters
     struct ConverterOptions
     {
         UpAxis upAxis = UpAxis::Y;
+        LinearUnit linearUnit = LinearUnit::Meters;
 
         virtual ~ConverterOptions() = default;
     };
