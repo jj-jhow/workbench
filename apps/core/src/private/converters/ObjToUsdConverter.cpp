@@ -31,12 +31,20 @@ namespace converters
         try
         {
             // Extract and transform
-            auto stage = Extract(inputPath, outputPath);
+            pxr::UsdStageRefPtr stage = Extract(inputPath, outputPath);
             if (!stage)
             {
                 std::cerr << "Failed to create USD stage: " << outputPath << std::endl;
                 return false;
             }
+
+            // Set up axis metadata
+            const pxr::TfToken upAxis = UpAxisParser::toToken(options.upAxis);
+            pxr::UsdGeomSetStageUpAxis(stage, upAxis);
+
+            // Set linear units to meters
+            const double linearUnit = LinearUnitParser::toDouble(options.linearUnit);
+            pxr::UsdGeomSetStageMetersPerUnit(stage, linearUnit);
 
             Transform(stage, options);
 
@@ -108,11 +116,6 @@ namespace converters
         }
 
         // Placeholder for transformation logic if needed
-        std::cout << "Transforming stage with up axis: " << UpAxisParser::toString(options.upAxis) << std::endl;
-
-        // Set up axis metadata
-        pxr::TfToken upAxisToken = UpAxisParser::toToken(options.upAxis);
-        pxr::UsdGeomSetStageUpAxis(stage, upAxisToken);
     }
 
     void ObjToUsdConverter::ExtractMeshData(const aiMesh *mesh, const aiScene *scene, pxr::UsdStageRefPtr stage) const
