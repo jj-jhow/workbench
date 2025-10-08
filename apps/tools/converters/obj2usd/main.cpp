@@ -16,6 +16,7 @@ struct Args
     std::string input;
     std::string output;
     UpAxis upAxis = UpAxis::Y;
+    LinearUnit linearUnit = LinearUnit::Meters;
     bool help = false;
 };
 
@@ -78,6 +79,27 @@ bool parseArgs(int argc, char *argv[], Args &args)
             {
                 std::cerr << "Error: " << argv[i] << " requires a value\n";
                 std::cerr << "Valid values: " << UpAxisParser::getValidValues() << std::endl;
+                return false;
+            }
+        }
+        else if (std::strcmp(argv[i], "-m") == 0 || std::strcmp(argv[i], "--meters-per-unit") == 0)
+        {
+            if (i + 1 < argc)
+            {
+                try
+                {
+                    args.linearUnit = LinearUnitParser::fromString(argv[++i]);
+                }
+                catch (const std::invalid_argument &e)
+                {
+                    std::cerr << "Error: " << e.what() << std::endl;
+                    return false;
+                }
+            }
+            else
+            {
+                std::cerr << "Error: " << argv[i] << " requires a value\n";
+                std::cerr << "Valid values: " << LinearUnitParser::getValidValues() << std::endl;
                 return false;
             }
         }
@@ -148,7 +170,6 @@ int main(int argc, char *argv[])
 
     // Log conversion start (similar to Python logging)
     std::cout << "Converting " << args.input << "..." << std::endl;
-    std::cout << "Up axis: " << args.upAxis << std::endl;
 
     try
     {
@@ -178,6 +199,7 @@ int main(int argc, char *argv[])
         // Create options
         ConverterOptions options;
         options.upAxis = args.upAxis;
+        options.linearUnit = args.linearUnit;
 
         // Perform conversion using the factory-provided converter
         bool success = converter->Convert(inputPath, outputPath, options);

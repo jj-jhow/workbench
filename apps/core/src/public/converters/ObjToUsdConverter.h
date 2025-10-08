@@ -20,6 +20,10 @@ namespace converters
     private:
         void ExtractMeshData(const aiMesh *mesh, const aiScene *scene, pxr::UsdStageRefPtr stage) const;
         pxr::UsdShadeMaterial ExtractMaterialData(const aiMaterial *material, pxr::UsdStageRefPtr stage) const;
+
+        bool SetDefaultPrim(pxr::UsdStageRefPtr stage) const;
+        bool SetUpAxis(pxr::UsdStageRefPtr stage, UpAxis upAxis) const;
+        bool SetMetersPerUnit(pxr::UsdStageRefPtr stage, LinearUnit linearUnit) const;
     };
 
 } // namespace converters

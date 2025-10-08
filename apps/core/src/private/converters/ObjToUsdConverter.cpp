@@ -1,22 +1,23 @@
 #include "converters/ObjToUsdConverter.h"
 
-#include <pxr/usd/usd/stage.h>
-#include <pxr/usd/usdGeom/mesh.h>
-#include <pxr/usd/usdGeom/metrics.h>
-#include <pxr/usd/usdShade/material.h>
-#include <pxr/usd/usdShade/shader.h>
-#include <pxr/usd/usdShade/materialBindingAPI.h>
-#include <pxr/base/tf/stringUtils.h>
-#include <pxr/base/tf/token.h>
-#include <pxr/base/vt/array.h>
-#include <pxr/base/gf/vec3f.h>
-#include <pxr/usd/sdf/attributeSpec.h>
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/mesh.h>
 #include <assimp/material.h>
 #include <assimp/types.h>
+#include <pxr/base/gf/vec3f.h>
+#include <pxr/base/tf/stringUtils.h>
+#include <pxr/base/tf/token.h>
+#include <pxr/base/vt/array.h>
+#include <pxr/usd/sdf/attributeSpec.h>
+#include <pxr/usd/usd/stage.h>
+#include <pxr/usd/usd/namespaceEditor.h>
+#include <pxr/usd/usdGeom/mesh.h>
+#include <pxr/usd/usdGeom/xform.h>
+#include <pxr/usd/usdGeom/metrics.h>
+#include <pxr/usd/usdShade/material.h>
+#include <pxr/usd/usdShade/shader.h>
+#include <pxr/usd/usdShade/materialBindingAPI.h>
 
 #include <iostream>
 #include <cmath>
@@ -37,14 +38,6 @@ namespace converters
                 std::cerr << "Failed to create USD stage: " << outputPath << std::endl;
                 return false;
             }
-
-            // Set up axis metadata
-            const pxr::TfToken upAxis = UpAxisParser::toToken(options.upAxis);
-            pxr::UsdGeomSetStageUpAxis(stage, upAxis);
-
-            // Set linear units to meters
-            const double linearUnit = LinearUnitParser::toDouble(options.linearUnit);
-            pxr::UsdGeomSetStageMetersPerUnit(stage, linearUnit);
 
             Transform(stage, options);
 
@@ -115,7 +108,9 @@ namespace converters
             return;
         }
 
-        // Placeholder for transformation logic if needed
+        SetDefaultPrim(stage);
+        SetUpAxis(stage, options.upAxis);
+        SetMetersPerUnit(stage, options.linearUnit);
     }
 
     void ObjToUsdConverter::ExtractMeshData(const aiMesh *mesh, const aiScene *scene, pxr::UsdStageRefPtr stage) const
@@ -254,6 +249,77 @@ namespace converters
         }
 
         return usdMaterial;
+    }
+
+    bool ObjToUsdConverter::SetDefaultPrim(pxr::UsdStageRefPtr stage) const
+    {
+        bool result = true;
+        if (!stage)
+        {
+            std::cerr << "Invalid USD stage." << std::endl;
+            return false;
+        }
+
+        const pxr::UsdPrimSiblingRange rootPrims = stage->GetPseudoRoot().GetChildren();
+        if (rootPrims.empty())
+        {
+            std::cerr << "No root prims found to set as default." << std::endl;
+            return false;
+        }
+
+        std::cout << "Setting default prim to world." << std::endl;
+        const pxr::UsdPrim worldPrim = pxr::UsdGeomXform::Define(stage, pxr::SdfPath("/World")).GetPrim();
+        stage->SetDefaultPrim(worldPrim);
+
+        pxr::UsdNamespaceEditor editor = pxr::UsdNamespaceEditor(stage);
+
+        for (const pxr::UsdPrim &prim : rootPrims)
+        {
+            if (prim == worldPrim)
+                continue;
+
+            std::cout << "Reparenting prim: " << prim.GetName().GetString() << " under " << worldPrim.GetName().GetString() << std::endl;
+            result = result && editor.ReparentPrim(prim, worldPrim) && editor.ApplyEdits();
+            if (!result)
+            {
+                std::cerr << "Failed to reparent prim: " << prim.GetName().GetString() << std::endl;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    bool ObjToUsdConverter::SetUpAxis(pxr::UsdStageRefPtr stage, UpAxis upAxis) const
+    {
+        if (!stage)
+        {
+            std::cerr << "Invalid USD stage." << std::endl;
+            return false;
+        }
+
+        const pxr::TfToken upAxisToken = UpAxisParser::toToken(upAxis);
+        pxr::UsdGeomSetStageUpAxis(stage, upAxisToken);
+
+        if (upAxis == UpAxis::Z)
+        {
+            return pxr::UsdGeomXformable(stage->GetDefaultPrim()).AddRotateXOp(pxr::UsdGeomXformOp::PrecisionFloat).Set(90.0f);
+        }
+
+        return true;
+    }
+
+    bool ObjToUsdConverter::SetMetersPerUnit(pxr::UsdStageRefPtr stage, LinearUnit linearUnit) const
+    {
+        if (!stage)
+        {
+            std::cerr << "Invalid USD stage." << std::endl;
+            return false;
+        }
+
+        // Set linear units to meters
+        const double unitInMeters = LinearUnitParser::toDouble(linearUnit);
+        return pxr::UsdGeomSetStageMetersPerUnit(stage, unitInMeters);
     }
 
 } // namespace converters

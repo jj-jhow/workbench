@@ -14,7 +14,6 @@ namespace converters
 
     enum class UpAxis
     {
-        X,
         Y,
         Z
     };
@@ -33,7 +32,7 @@ namespace converters
                 return it->second;
             }
 
-            throw std::invalid_argument("Invalid up-axis value: '" + str + "'. Valid values are: x, y, z");
+            throw std::invalid_argument("Invalid up-axis value: '" + str + "'. Valid values are: y, z");
         }
 
         // Convert UpAxis enum to USD token (equivalent to enum.value in Python)
@@ -65,13 +64,13 @@ namespace converters
         // Get list of valid values for help text
         static std::string getValidValues()
         {
-            return "x, y, z";
+            return "y, z";
         }
 
         // Get all enum values (similar to Python's list(UpAxis))
         static std::vector<UpAxis> getAllValues()
         {
-            return {UpAxis::X, UpAxis::Y, UpAxis::Z};
+            return {UpAxis::Y, UpAxis::Z};
         }
 
     private:
