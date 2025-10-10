@@ -6,10 +6,10 @@ A modular C++ application suite using Pixar's OpenUSD (pxr) library for USD asse
 
 This project is organized into multiple components that can be built independently or together:
 
-- **Core Library** (`apps/core/`): Shared functionality, converters, and USD utilities
-- **GUI Application** (`apps/gui/`): Qt-based GUI for USD scene viewing and editing
-- **Command-Line Tools** (`apps/tools/`): CLI utilities for USD conversion and processing
-- **Web UI** (`apps/webui/`): Web-based interface (optional)
+- **Core Library** (`apps/workbench/core/`): Shared functionality, converters, and USD utilities
+- **GUI Application** (`apps/workbench/gui/`): Qt-based GUI for USD scene viewing and editing
+- **Command-Line Tools** (`apps/workbench/tools/`): CLI utilities for USD conversion and processing
+- **Web UI** (`apps/workbench/webui/`): Web-based interface (optional)
 
 ## Requirements
 - CMake >= 3.20
@@ -90,14 +90,14 @@ The project includes VS Code tasks for easy building:
 
 ### GUI Application
 ```bash
-./build/apps/gui/workbench_gui
+./build/apps/workbench/gui/workbench_gui
 ```
 
 ### Command-Line Tools
 ```bash
 # obj2usd converter
-./build/apps/tools/converters/obj2usd/obj2usd --help
-./build/apps/tools/converters/obj2usd/obj2usd input.obj output.usd
+./build/apps/workbench/tools/converters/obj2usd/obj2usd --help
+./build/apps/workbench/tools/converters/obj2usd/obj2usd input.obj output.usd
 ```
 
 ## Project Structure
@@ -127,7 +127,7 @@ The project includes VS Code tasks for easy building:
 Individual tools can also be built standalone:
 
 ```bash
-cd apps/tools/converters/obj2usd
+cd apps/workbench/tools/converters/obj2usd
 mkdir build && cd build
 cmake ..
 make
