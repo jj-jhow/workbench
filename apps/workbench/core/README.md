@@ -31,7 +31,7 @@ sudo apt install qt5-default qtbase5-dev qttools5-dev
 ## Project Structure
 
 ```
-apps/core/
+apps/workbench/core/
 ├── CMakeLists.txt           # Build configuration
 ├── src/
 │   ├── public/             # Public headers (API)
@@ -189,7 +189,7 @@ cmake --install build --prefix=./install --component workbench_core
 ## Development Workflow
 
 ### 1. Make Code Changes
-Edit files in `apps/core/src/`
+Edit files in `apps/workbench/core/src/`
 
 ### 2. Rebuild
 ```bash
@@ -240,8 +240,8 @@ cmake --build build --verbose
 
 ### Check Dependencies
 ```bash
-ldd ./build/apps/core/libworkbench_core.a  # (won't work for static lib)
-ldd ./build/apps/gui/workbench_gui
+ldd ./build/apps/workbench/core/libworkbench_core.a  # (won't work for static lib)
+ldd ./build/apps/workbench/gui/workbench_gui
 ```
 
 ## API Reference
