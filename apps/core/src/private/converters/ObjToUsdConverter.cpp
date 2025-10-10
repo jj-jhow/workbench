@@ -32,12 +32,14 @@ namespace converters
         try
         {
             // Extract and transform
-            pxr::UsdStageRefPtr stage = Extract(inputPath, outputPath);
+            pxr::UsdStageRefPtr stage = pxr::UsdStage::CreateNew(outputPath);
             if (!stage)
             {
                 std::cerr << "Failed to create USD stage: " << outputPath << std::endl;
                 return false;
             }
+
+            Extract(stage, inputPath, outputPath);
 
             Transform(stage, options);
 
@@ -54,7 +56,7 @@ namespace converters
         }
     }
 
-    pxr::UsdStageRefPtr ObjToUsdConverter::Extract(const fs::path &inputPath, const fs::path &outputPath) const
+    bool ObjToUsdConverter::Extract(pxr::UsdStageRefPtr stage, const fs::path &inputPath, const fs::path &outputPath) const
     {
         std::cout << "Extracting data from: " << inputPath << " to " << outputPath << std::endl;
 
@@ -65,21 +67,13 @@ namespace converters
         if (!scene)
         {
             std::cerr << "Failed to read data from OBJ file: " << inputPath << std::endl;
-            return nullptr;
-        }
-
-        // Create a new USD stage so we can populate it with the extracted data
-        auto stage = pxr::UsdStage::CreateNew(outputPath);
-        if (!stage)
-        {
-            std::cerr << "Failed to create USD stage: " << outputPath << std::endl;
-            return nullptr;
+            return false;
         }
 
         if (!scene->HasMeshes())
         {
             std::cerr << "Warning: No meshes found in OBJ file: " << inputPath << std::endl;
-            return stage;
+            return false;
         }
 
         // The actual data conversion from aiScene to USD
@@ -97,20 +91,18 @@ namespace converters
             ExtractMeshData(mesh, scene, stage);
         }
 
-        return stage;
+        return true;
     }
 
-    void ObjToUsdConverter::Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const
+    bool ObjToUsdConverter::Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const
     {
         if (!stage)
         {
             std::cerr << "Invalid USD stage." << std::endl;
-            return;
+            return false;
         }
 
-        SetDefaultPrim(stage);
-        SetUpAxis(stage, options.upAxis);
-        SetMetersPerUnit(stage, options.linearUnit);
+        return SetDefaultPrim(stage) && SetUpAxis(stage, options.upAxis) && SetMetersPerUnit(stage, options.linearUnit);
     }
 
     void ObjToUsdConverter::ExtractMeshData(const aiMesh *mesh, const aiScene *scene, pxr::UsdStageRefPtr stage) const

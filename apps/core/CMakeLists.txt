@@ -55,6 +55,7 @@ include(${FBX_SDK_PATH}/samples/fbxsdk.cmake)
 target_link_libraries(workbench_core
     PUBLIC
         usd
+        tf
         usdGeom
         fbxsdk
         usdImagingGL

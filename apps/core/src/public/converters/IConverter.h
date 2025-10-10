@@ -28,8 +28,8 @@ namespace converters
         virtual bool Convert(const fs::path &inputPath, const fs::path &outputPath, const ConverterOptions &options) const = 0;
 
     protected:
-        virtual pxr::UsdStageRefPtr Extract(const fs::path &inputPath, const fs::path &outputPath) const = 0;
-        virtual void Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const = 0;
+        virtual bool Extract(pxr::UsdStageRefPtr stage, const fs::path &inputPath, const fs::path &outputPath) const = 0;
+        virtual bool Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const = 0;
     };
 
 } // namespace converters

@@ -15,16 +15,17 @@ namespace converters
         return true;
     }
 
-    pxr::UsdStageRefPtr FbxToUsdConverter::Extract(const fs::path &inputPath, const fs::path &outputPath) const
+    bool FbxToUsdConverter::Extract(pxr::UsdStageRefPtr stage, const fs::path &inputPath, const fs::path &outputPath) const
     {
         std::cout << "Extracting data from: " << inputPath << " to " << outputPath << std::endl;
         // Placeholder for extraction logic
-        return nullptr;
+        return false;
     }
 
-    void FbxToUsdConverter::Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const
+    bool FbxToUsdConverter::Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const
     {
         std::cout << "Transforming stage with up axis: " << UpAxisParser::toString(options.upAxis) << std::endl;
+        return true;
         // Placeholder for transformation logic
     }
 } // namespace converters

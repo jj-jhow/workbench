@@ -14,8 +14,8 @@ namespace converters
         virtual bool Convert(const fs::path &inputPath, const fs::path &outputPath, const ConverterOptions &options) const override;
 
     protected:
-        virtual pxr::UsdStageRefPtr Extract(const fs::path &inputPath, const fs::path &outputPath) const override;
-        virtual void Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const override;
+        virtual bool Extract(pxr::UsdStageRefPtr stage, const fs::path &inputPath, const fs::path &outputPath) const override;
+        virtual bool Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const override;
 
     private:
         void ExtractMeshData(const aiMesh *mesh, const aiScene *scene, pxr::UsdStageRefPtr stage) const;

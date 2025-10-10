@@ -11,12 +11,14 @@ namespace converters
         try
         {
             // Extract and transform
-            auto stage = Extract(inputPath, outputPath);
+            pxr::UsdStageRefPtr stage = pxr::UsdStage::CreateNew(outputPath);
             if (!stage)
             {
-                std::cerr << "Failed to load USD stage: " << inputPath << std::endl;
+                std::cerr << "Failed to create USD stage: " << outputPath << std::endl;
                 return false;
             }
+
+            Extract(stage, inputPath, outputPath);
 
             Transform(stage, options);
 
@@ -31,26 +33,27 @@ namespace converters
         }
     }
 
-    pxr::UsdStageRefPtr UsdToFbxConverter::Extract(const fs::path &inputPath, const fs::path &outputPath) const
+    bool UsdToFbxConverter::Extract(pxr::UsdStageRefPtr stage, const fs::path &inputPath, const fs::path &outputPath) const
     {
         std::cout << "Loading USD stage from: " << inputPath << std::endl;
 
         // Load existing USD stage
-        auto stage = pxr::UsdStage::Open(inputPath.string());
+        stage = pxr::UsdStage::Open(inputPath.string());
         if (!stage)
         {
             std::cerr << "Failed to open USD stage: " << inputPath << std::endl;
-            return nullptr;
+            return false;
         }
 
-        return stage;
+        return true;
     }
 
-    void UsdToFbxConverter::Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const
+    bool UsdToFbxConverter::Transform(pxr::UsdStageRefPtr stage, const ConverterOptions &options) const
     {
         std::cout << "Transforming USD stage for FBX export..." << std::endl;
         // TODO: Apply transformations based on options
         // For now, this is a placeholder
+        return true;
     }
 
 } // namespace converters
