@@ -17,6 +17,7 @@
 #include <QDir>
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 #include <QDockWidget>
 
@@ -24,6 +25,8 @@
 #include "SceneViewWidget.h"
 #include "SceneTreeWidget.h"
 #include "PrimPropertiesWidget.h"
+
+namespace fs = std::filesystem;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), stageManager(std::make_unique<StageManager>())
@@ -165,7 +168,7 @@ void MainWindow::convertFile()
         QMessageBox::warning(this, tr("Error"), tr("No converter available for this file type and output format."));
         return;
     }
-    if (converter->Convert(inputPath.toStdString(), outputPath.toStdString()))
+    if (converter->Convert(fs::path(inputPath.toStdString()), fs::path(outputPath.toStdString()), converters::ConverterOptions()))
     {
         logMessage(tr("Conversion succeeded! Output: %1").arg(outputPath));
     }
