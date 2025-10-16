@@ -9,6 +9,10 @@ if(BUILD_OBJ2USD)
     add_subdirectory(converters/obj2usd)
 endif()
 
+# Add optimizer tools
+message(STATUS "Adding optimizer tools")
+add_subdirectory(optimizers)
+
 # Add more tools here as they are developed
 # Example:
 # option(BUILD_USD2OBJ "Build the usd2obj converter tool" OFF)
