@@ -5,6 +5,7 @@ endif(COMMAND cmake_policy)
 # Define a target for our optimizer library.
 add_library(workbench_optimizer STATIC
     src/MeshTriangulator.cpp
+    src/HiddenMeshRemover.cpp
 )
 
 # --- Dependencies ---
