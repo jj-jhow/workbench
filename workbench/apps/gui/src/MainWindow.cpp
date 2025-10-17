@@ -20,6 +20,7 @@
 #include <filesystem>
 
 #include <QDockWidget>
+#include <QPushButton>
 
 #include "converters/ConverterFactory.h"
 #include "SceneViewWidget.h"
@@ -29,7 +30,7 @@
 namespace fs = std::filesystem;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), stageManager(std::make_unique<StageManager>())
+    : QMainWindow(parent), stageManager(std::make_unique<StageManager>()), currentMode(ApplicationMode::View)
 {
     createMenus();
     createToolBar();
@@ -37,6 +38,9 @@ MainWindow::MainWindow(QWidget *parent)
     createLogWindow();
     setWindowTitle("USD Workbench");
     resize(800, 600);
+
+    // Initialize UI for the default mode
+    updateUIForMode();
 
     // --- Splitter-based UI setup ---
     mainSplitter = new QSplitter(Qt::Horizontal, this);
@@ -78,6 +82,12 @@ void MainWindow::createMenus()
     connect(exitAct, &QAction::triggered, this, &MainWindow::quitApp);
     fileMenu->addAction(exitAct);
 
+    // Mode menu
+    modeMenu = menuBar()->addMenu(tr("&Mode"));
+    modeToggleAct = new QAction(tr("Switch to Edit Mode"), this);
+    connect(modeToggleAct, &QAction::triggered, this, &MainWindow::toggleMode);
+    modeMenu->addAction(modeToggleAct);
+
     helpMenu = menuBar()->addMenu(tr("&Help"));
     helpAct = new QAction(tr("Help"), this);
     connect(helpAct, &QAction::triggered, this, &MainWindow::showHelp);
@@ -90,6 +100,21 @@ void MainWindow::createMenus()
 void MainWindow::createToolBar()
 {
     mainToolBar = addToolBar(tr("Main Toolbar"));
+
+    // Add mode toggle button to main toolbar
+    modeToggleButton = new QPushButton(tr("Switch to Edit Mode"), this);
+    modeToggleButton->setCheckable(true);
+    connect(modeToggleButton, &QPushButton::clicked, this, &MainWindow::toggleMode);
+    mainToolBar->addWidget(modeToggleButton);
+
+    mainToolBar->addSeparator();
+
+    // Create separate toolbars for edit and view modes
+    editToolBar = addToolBar(tr("Edit Tools"));
+    viewToolBar = addToolBar(tr("View Tools"));
+
+    setupEditModeTools();
+    setupViewModeTools();
 }
 
 void MainWindow::createStatusBar()
@@ -117,7 +142,7 @@ void MainWindow::logMessage(const QString &msg)
 
 void MainWindow::openUsdFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open USD File"), QDir::homePath(), tr("USD Files (*.usd *.usda *.usdc);;All Files (*)"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open USD File"), QDir::homePath(), tr("USD Files (*.usd *.usda *.usdc *.usdz);;All Files (*)"));
     if (fileName.isEmpty())
         return;
     lastOpenedFile = fileName;
@@ -192,4 +217,115 @@ void MainWindow::showAbout()
 void MainWindow::quitApp()
 {
     QApplication::quit();
+}
+
+void MainWindow::toggleMode()
+{
+    currentMode = (currentMode == ApplicationMode::Edit) ? ApplicationMode::View : ApplicationMode::Edit;
+    updateUIForMode();
+
+    QString modeText = (currentMode == ApplicationMode::Edit) ? "Edit" : "View";
+    logMessage(tr("Switched to %1 mode").arg(modeText));
+}
+
+void MainWindow::updateUIForMode()
+{
+    if (currentMode == ApplicationMode::Edit)
+    {
+        // Update button and menu text
+        modeToggleButton->setText(tr("Switch to View Mode"));
+        modeToggleButton->setChecked(true);
+        modeToggleAct->setText(tr("Switch to View Mode"));
+
+        // Show edit toolbar, hide view toolbar
+        editToolBar->setVisible(true);
+        viewToolBar->setVisible(false);
+
+        // Update status
+        statusLabel->setText(tr("Edit Mode - Authoring tools available"));
+        setWindowTitle("USD Workbench - Edit Mode");
+    }
+    else
+    {
+        // Update button and menu text
+        modeToggleButton->setText(tr("Switch to Edit Mode"));
+        modeToggleButton->setChecked(false);
+        modeToggleAct->setText(tr("Switch to Edit Mode"));
+
+        // Show view toolbar, hide edit toolbar
+        editToolBar->setVisible(false);
+        viewToolBar->setVisible(true);
+
+        // Update status
+        statusLabel->setText(tr("View Mode - Viewing tools available"));
+        setWindowTitle("USD Workbench - View Mode");
+    }
+}
+
+void MainWindow::setupEditModeTools()
+{
+    // Placeholder actions for future authoring tools
+    createPrimAct = new QAction(tr("Create Prim"), this);
+    createPrimAct->setToolTip(tr("Create a new primitive in the scene"));
+    createPrimAct->setEnabled(false); // Disabled until implemented
+    connect(createPrimAct, &QAction::triggered, [this]()
+            { logMessage(tr("Create Prim tool - Not yet implemented")); });
+    editToolBar->addAction(createPrimAct);
+
+    deletePrimAct = new QAction(tr("Delete Prim"), this);
+    deletePrimAct->setToolTip(tr("Delete selected primitive"));
+    deletePrimAct->setEnabled(false); // Disabled until implemented
+    connect(deletePrimAct, &QAction::triggered, [this]()
+            { logMessage(tr("Delete Prim tool - Not yet implemented")); });
+    editToolBar->addAction(deletePrimAct);
+
+    editToolBar->addSeparator();
+
+    transformToolAct = new QAction(tr("Transform"), this);
+    transformToolAct->setToolTip(tr("Transform selected objects"));
+    transformToolAct->setEnabled(false); // Disabled until implemented
+    connect(transformToolAct, &QAction::triggered, [this]()
+            { logMessage(tr("Transform tool - Not yet implemented")); });
+    editToolBar->addAction(transformToolAct);
+
+    materialEditorAct = new QAction(tr("Materials"), this);
+    materialEditorAct->setToolTip(tr("Edit materials and shading"));
+    materialEditorAct->setEnabled(false); // Disabled until implemented
+    connect(materialEditorAct, &QAction::triggered, [this]()
+            { logMessage(tr("Material Editor - Not yet implemented")); });
+    editToolBar->addAction(materialEditorAct);
+}
+
+void MainWindow::setupViewModeTools()
+{
+    // Placeholder actions for future viewing tools
+    playAnimationAct = new QAction(tr("Play Animation"), this);
+    playAnimationAct->setToolTip(tr("Play/pause animation timeline"));
+    playAnimationAct->setEnabled(false); // Disabled until implemented
+    connect(playAnimationAct, &QAction::triggered, [this]()
+            { logMessage(tr("Animation Player - Not yet implemented")); });
+    viewToolBar->addAction(playAnimationAct);
+
+    frameStageAct = new QAction(tr("Frame Stage"), this);
+    frameStageAct->setToolTip(tr("Frame the entire stage in the viewport"));
+    frameStageAct->setEnabled(false); // Disabled until implemented
+    connect(frameStageAct, &QAction::triggered, [this]()
+            { logMessage(tr("Frame Stage - Not yet implemented")); });
+    viewToolBar->addAction(frameStageAct);
+
+    viewToolBar->addSeparator();
+
+    measureToolAct = new QAction(tr("Measure"), this);
+    measureToolAct->setToolTip(tr("Measure distances and angles"));
+    measureToolAct->setEnabled(false); // Disabled until implemented
+    connect(measureToolAct, &QAction::triggered, [this]()
+            { logMessage(tr("Measure tool - Not yet implemented")); });
+    viewToolBar->addAction(measureToolAct);
+
+    inspectToolAct = new QAction(tr("Inspect"), this);
+    inspectToolAct->setToolTip(tr("Inspect object properties and metadata"));
+    inspectToolAct->setEnabled(false); // Disabled until implemented
+    connect(inspectToolAct, &QAction::triggered, [this]()
+            { logMessage(tr("Inspect tool - Not yet implemented")); });
+    viewToolBar->addAction(inspectToolAct);
 }
