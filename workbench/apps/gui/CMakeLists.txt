@@ -7,20 +7,40 @@ find_package(Qt5 COMPONENTS Widgets OpenGL REQUIRED)
 
 # Define the executable target and its source files.
 add_executable(workbench_gui
+    # Main entry point
     src/main.cpp
-    src/MainWindow.cpp
-    src/SceneViewWidget.cpp
-    src/SceneTreeWidget.cpp
-    src/PrimPropertiesWidget.cpp
+    
+    # Core components
+    src/core/MainWindow.cpp
+    
+    # UI managers
+    src/ui/MenuManager.cpp
+    src/ui/ToolbarManager.cpp
+    src/ui/StatusManager.cpp
+    src/ui/LogManager.cpp
+    
+    # Action handlers
+    src/actions/FileActions.cpp
+    
+    # Widgets
+    src/widgets/SceneViewWidget.cpp
+    src/widgets/SceneTreeWidget.cpp
+    src/widgets/PrimPropertiesWidget.cpp
+    
+    # Rendering
     src/render/HydraRenderer.cpp
     
     # Header files needed for Qt MOC
-    src/MainWindow.h
-    src/SceneViewWidget.h
-    src/SceneTreeWidget.h
-    src/PrimPropertiesWidget.h
+    src/core/MainWindow.h
+    src/ui/MenuManager.h
+    src/ui/ToolbarManager.h
+    src/ui/StatusManager.h
+    src/ui/LogManager.h
+    src/actions/FileActions.h
+    src/widgets/SceneViewWidget.h
+    src/widgets/SceneTreeWidget.h
+    src/widgets/PrimPropertiesWidget.h
     src/render/HydraRenderer.h
-    # Add other source files for the GUI here
 )
 
 # --- Include Directories ---
