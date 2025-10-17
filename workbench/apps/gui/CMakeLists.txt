@@ -1,5 +1,5 @@
 set(CMAKE_AUTOMOC ON) # Needed for Qt signals/slots
-set(CMAKE_AUTOMOC_MOC_OPTIONS "-I${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(CMAKE_AUTOMOC_MOC_OPTIONS "-I${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # --- Dependencies ---
 # You will also need to find Qt packages here
@@ -15,11 +15,11 @@ add_executable(workbench_gui
     src/render/HydraRenderer.cpp
     
     # Header files needed for Qt MOC
-    include/MainWindow.h
-    include/SceneViewWidget.h
-    include/SceneTreeWidget.h
-    include/PrimPropertiesWidget.h
-    include/render/HydraRenderer.h
+    src/MainWindow.h
+    src/SceneViewWidget.h
+    src/SceneTreeWidget.h
+    src/PrimPropertiesWidget.h
+    src/render/HydraRenderer.h
     # Add other source files for the GUI here
 )
 
@@ -27,8 +27,6 @@ add_executable(workbench_gui
 target_include_directories(workbench_gui
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${Qt5Widgets_INCLUDE_DIRS}
         ${Qt5Core_INCLUDE_DIRS}
         ${Qt5Gui_INCLUDE_DIRS}
@@ -37,7 +35,7 @@ target_include_directories(workbench_gui
 
 # --- Link Libraries ---
 target_link_libraries(workbench_gui
-    PRIVATE
+    PUBLIC
         # Link to our internal library by its target name
         workbench_core
 
