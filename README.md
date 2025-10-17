@@ -16,10 +16,53 @@ This monorepo is organized using a domain-first approach with components that ca
 ## Requirements
 - CMake >= 3.20
 - C++20 or newer
-- OpenUSD (pxr) built and installed at `/home/jonathan/usd`
+- OpenUSD (pxr) - set PXR_INSTALL_PATH environment variable
 - Qt5 (for GUI components)
 - FBX SDK (for FBX conversion tools)
 - Assimp (for additional format support)
+
+### Dependency Setup
+
+#### Quick Setup (Recommended)
+1. Copy the sample configuration file:
+   ```bash
+   cp config.sample.sh config.sh
+   ```
+2. Edit `config.sh` with your installation paths
+3. Source the configuration:
+   ```bash
+   source config.sh
+   ```
+
+#### Manual Setup
+
+##### OpenUSD
+Set the environment variable pointing to your USD installation:
+```bash
+export PXR_INSTALL_PATH=/path/to/your/usd/installation
+```
+
+##### Assimp
+The build system will automatically find Assimp if it's installed system-wide. For custom installations:
+```bash
+# Option 1: Environment variable
+export ASSIMP_ROOT=/path/to/your/assimp/installation
+
+# Option 2: CMake variable
+cmake -DASSIMP_ROOT=/path/to/your/assimp/installation ...
+```
+
+##### Installing Dependencies on Ubuntu/Debian
+```bash
+# System-wide Assimp (recommended)
+sudo apt install libassimp-dev
+
+# Qt5 for GUI
+sudo apt install qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+
+# Build tools
+sudo apt install cmake build-essential
+```
 
 ## Building
 
@@ -155,7 +198,6 @@ make
 ```
 
 ## Notes
-- If you see include errors in your editor, ensure your includePath is set to `/home/jonathan/usd/include`.
 - The GUI application requires Qt5 to be installed and findable by CMake.
 - Some tools require additional dependencies like FBX SDK or Assimp.
 - Dependencies are automatically resolved when building as part of the main project.
