@@ -4,12 +4,14 @@ A modular C++ application suite using Pixar's OpenUSD (pxr) library for USD asse
 
 ## Components
 
-This project is organized into multiple components that can be built independently or together:
+This monorepo is organized using a domain-first approach with components that can be built independently or together:
 
-- **Core Library** (`apps/workbench/core/`): Shared functionality, converters, and USD utilities
-- **GUI Application** (`apps/workbench/gui/`): Qt-based GUI for USD scene viewing and editing
-- **Command-Line Tools** (`apps/workbench/tools/`): CLI utilities for USD conversion and processing
-- **Web UI** (`apps/workbench/webui/`): Web-based interface (optional)
+### Workbench Domain
+- **Core Library** (`workbench/libs/core/`): Shared functionality, converters, and USD utilities
+- **Optimizer Library** (`workbench/libs/optimizer/`): Mesh optimization algorithms and USD processing
+- **GUI Application** (`workbench/apps/gui/`): Qt-based GUI for USD scene viewing and editing
+- **Command-Line Tools** (`workbench/apps/tools/`): CLI utilities for USD conversion and processing
+- **Web UI** (`workbench/apps/webui/`): Web-based interface (optional)
 
 ## Requirements
 - CMake >= 3.20
@@ -90,44 +92,63 @@ The project includes VS Code tasks for easy building:
 
 ### GUI Application
 ```bash
-./build/apps/workbench/gui/workbench_gui
+# Run the GUI application
+./build/workbench/apps/gui/workbench_gui
 ```
 
 ### Command-Line Tools
 ```bash
-# obj2usd converter
-./build/apps/workbench/tools/converters/obj2usd/obj2usd --help
-./build/apps/workbench/tools/converters/obj2usd/obj2usd input.obj output.usd
+# Show help for obj2usd converter
+./build/workbench/apps/tools/converters/obj2usd/obj2usd --help
+./build/workbench/apps/tools/converters/obj2usd/obj2usd input.obj output.usd
+
+# Show help for mesh optimization tools
+./build/workbench/apps/tools/optimizers/mesh/triangulate_meshes --help
+./build/workbench/apps/tools/optimizers/mesh/remove_hidden_meshes --help
 ```
 
 ## Project Structure
 ```
-├── apps/
-│   ├── core/           # Core library with shared functionality
-│   ├── gui/            # Qt-based GUI application
-│   ├── tools/          # Command-line tools
-│   │   └── converters/
-│   │       └── obj2usd/
-│   └── webui/          # Web interface (optional)
-├── resources/          # Test assets and sample files
-├── build.sh           # Convenient build script
-└── .vscode/
-    └── tasks.json      # VS Code build tasks
+├── workbench/              # Workbench domain
+│   ├── libs/               # Workbench libraries
+│   │   ├── core/           # Core library (shared functionality)
+│   │   └── optimizer/      # USD optimization algorithms
+│   └── apps/               # Workbench applications
+│       ├── gui/            # Qt-based GUI application
+│       ├── tools/          # Command-line tools
+│       │   ├── converters/ # Format conversion tools
+│       │   └── optimizers/ # Mesh optimization tools
+│       └── webui/          # Web interface (optional)
+├── conveyor/               # Conveyor domain (workflow orchestration)
+│   ├── libs/               # Conveyor libraries
+│   │   └── common/         # Shared utilities and types
+│   └── apps/               # Conveyor applications
+│       ├── orchestrator/   # Workflow orchestration service
+│       └── worker/         # Task execution worker
+├── shared/                 # Cross-domain shared code
+├── resources/              # Test assets and sample files
+└── build.sh               # Convenient build script
 ```
-
 ## Development
 
 ### Adding New Components
-1. Create a new directory under `apps/`
-2. Add a `CMakeLists.txt` file
-3. Update the main `CMakeLists.txt` to include your component
-4. Add build options and VS Code tasks as needed
+
+#### Adding Workbench Components
+1. **Libraries**: Create directories under `workbench/libs/`
+2. **Applications**: Create directories under `workbench/apps/`
+3. Add a `CMakeLists.txt` file for your component
+4. Update the main `CMakeLists.txt` to include your component
+5. Add build options and tasks as needed
+
+#### Cross-Domain Components
+1. **Shared Libraries**: Use `shared/` for code used by both domains
+2. Ensure clear dependency management between domains
 
 ### Standalone Tool Building
 Individual tools can also be built standalone:
 
 ```bash
-cd apps/workbench/tools/converters/obj2usd
+cd workbench/apps/tools/converters/obj2usd
 mkdir build && cd build
 cmake ..
 make

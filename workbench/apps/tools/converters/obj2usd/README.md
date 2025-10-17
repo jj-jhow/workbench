@@ -33,7 +33,7 @@ A command-line tool for converting OBJ files to USD format using the Workbench C
 ### Build the standalone tool
 
 ```bash
-cd apps/workbench/tools/converters/obj2usd
+cd workbench/apps/tools/converters/obj2usd
 mkdir build
 cd build
 cmake ..

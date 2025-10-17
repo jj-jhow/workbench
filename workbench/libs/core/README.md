@@ -189,7 +189,7 @@ cmake --install build --prefix=./install --component workbench_core
 ## Development Workflow
 
 ### 1. Make Code Changes
-Edit files in `apps/workbench/core/src/`
+Edit files in `workbench/libs/core/src/`
 
 ### 2. Rebuild
 ```bash
@@ -240,8 +240,8 @@ cmake --build build --verbose
 
 ### Check Dependencies
 ```bash
-ldd ./build/apps/workbench/core/libworkbench_core.a  # (won't work for static lib)
-ldd ./build/apps/workbench/gui/workbench_gui
+ldd ./build/workbench/libs/core/libworkbench_core.a  # (won't work for static lib)
+ldd ./build/workbench/apps/gui/workbench_gui
 ```
 
 ## API Reference

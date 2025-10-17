@@ -21,7 +21,7 @@ A React.js web application for USD authoring and viewing with Three.js integrati
 
 1. Navigate to the webui directory:
 ```bash
-cd apps/workbench/webui
+cd workbench/apps/webui
 ```
 
 2. Install dependencies:

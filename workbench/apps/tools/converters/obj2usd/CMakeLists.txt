@@ -30,7 +30,7 @@ if(STANDALONE_BUILD)
     find_library(WORKBENCH_CORE_LIB 
         NAMES workbench_core libworkbench_core.a
         PATHS 
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../../../build/apps/workbench/core
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../build/workbench/libs/core
             ${CMAKE_CURRENT_SOURCE_DIR}/../../../../install/lib
         NO_DEFAULT_PATH
     )
