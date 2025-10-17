@@ -79,6 +79,12 @@ if(BUILD_OPTIMIZER)
     add_subdirectory(workbench/libs/optimizer)
 endif()
 
+# Add author library (always build when CORE is available)
+if(BUILD_CORE)
+    message(STATUS "Adding author library")
+    add_subdirectory(workbench/libs/author)
+endif()
+
 if(BUILD_GUI)
     if(NOT BUILD_CORE)
         message(FATAL_ERROR "GUI requires CORE to be built. Enable BUILD_CORE or use BUILD_GUI_ONLY option.")
