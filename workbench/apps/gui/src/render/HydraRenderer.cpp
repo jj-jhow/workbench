@@ -1,4 +1,4 @@
-#include "HydraRenderer.h"
+#include "render/HydraRenderer.h"
 #include <pxr/imaging/garch/glApi.h>
 
 PXR_NAMESPACE_OPEN_SCOPE
@@ -28,7 +28,8 @@ void HydraRenderer::Render(const UsdPrim &prim, const UsdImagingGLRenderParams &
 
 void HydraRenderer::SetCamera(const GfMatrix4d &viewMatrix, const GfMatrix4d &projectionMatrix)
 {
-    if (_taskController) {
+    if (_taskController)
+    {
         _taskController->SetFreeCameraMatrices(viewMatrix, projectionMatrix);
     }
 }

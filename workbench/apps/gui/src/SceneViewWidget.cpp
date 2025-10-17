@@ -26,7 +26,8 @@ void SceneViewWidget::initializeGL()
 
 void SceneViewWidget::resizeGL(int w, int h)
 {
-    if (_renderer) _renderer->SetRenderViewport(0, 0, w, h);
+    if (_renderer)
+        _renderer->SetRenderViewport(0, 0, w, h);
 }
 
 void SceneViewWidget::paintGL()
