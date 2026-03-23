@@ -27,3 +27,7 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+
+# generated wasm artifacts
+/public/openusd.js
+/public/openusd.wasm

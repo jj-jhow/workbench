@@ -1,5 +1,20 @@
 // Hook for WASM OpenUSD integration
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+
+declare global {
+  interface Window {
+    OpenUSDModule?: (config?: Record<string, unknown>) => Promise<EmscriptenModule>;
+  }
+}
+
+interface EmscriptenModule {
+  unpackUSDZ: (data: string) => any;
+  packUSDZ: (data: string) => string | null;
+  createPrimitive: (type: string, properties: any) => any;
+  updatePrimitive: (id: string, properties: any) => void;
+  deletePrimitive: (id: string) => void;
+  exportUSDZ: () => string | null;
+}
 
 interface WASMModule {
   unpackUSDZ: (data: any) => Promise<any>;
@@ -19,58 +34,124 @@ interface UseWASMReturn {
   unpackUSDZForEditing: (usdzData: any) => Promise<any>;
 }
 
+function checkCrossOriginIsolation(): void {
+  if (typeof crossOriginIsolated !== 'undefined' && !crossOriginIsolated) {
+    console.warn(
+      'Cross-origin isolation is not enabled. ' +
+      'SharedArrayBuffer (required by pthreads WASM) will not be available. ' +
+      'Set Cross-Origin-Opener-Policy: same-origin and ' +
+      'Cross-Origin-Embedder-Policy: require-corp headers on your server.'
+    );
+  }
+}
+
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+function uint8ArrayToString(bytes: Uint8Array): string {
+  const chunks: string[] = [];
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    chunks.push(String.fromCharCode(...bytes.subarray(i, i + chunkSize)));
+  }
+  return chunks.join('');
+}
+
+function stringToUint8Array(str: string): Uint8Array {
+  const buf = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i++) {
+    buf[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
 export const useWASM = (): UseWASMReturn => {
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [wasmModule, setWasmModule] = useState<WASMModule | null>(null);
+  const moduleRef = useRef<EmscriptenModule | null>(null);
 
   const initializeWASM = useCallback(async () => {
+    if (moduleRef.current) {
+      setIsReady(true);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      // TODO: Replace with actual WASM module loading
-      console.log('Loading OpenUSD WASM module...');
-      
-      // Simulate WASM module loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create mock WASM module for now
-      const mockModule: WASMModule = {
+      checkCrossOriginIsolation();
+
+      // Load the Emscripten-generated JS loader
+      await loadScript('/openusd.js');
+
+      if (!window.OpenUSDModule) {
+        throw new Error('OpenUSDModule factory not found after loading openusd.js');
+      }
+
+      const instance = await window.OpenUSDModule();
+      moduleRef.current = instance;
+
+      // Wrap raw embind functions into the WASMModule interface
+      const wrappedModule: WASMModule = {
         unpackUSDZ: async (data: any) => {
-          console.log('WASM: Unpacking USDZ...', data);
-          // Return mock unpacked data
-          return {
-            primitives: [],
-            cameras: [],
-            lights: [],
-            materials: []
-          };
+          let bytes: Uint8Array;
+          if (data instanceof ArrayBuffer) {
+            bytes = new Uint8Array(data);
+          } else if (data instanceof Uint8Array) {
+            bytes = data;
+          } else if (data instanceof File || data instanceof Blob) {
+            bytes = new Uint8Array(await data.arrayBuffer());
+          } else {
+            throw new Error('unpackUSDZ: expected ArrayBuffer, Uint8Array, File, or Blob');
+          }
+          const binaryStr = uint8ArrayToString(bytes);
+          return instance.unpackUSDZ(binaryStr);
         },
+
         packUSDZ: async (data: any) => {
-          console.log('WASM: Packing USDZ...', data);
-          return new Blob([], { type: 'application/octet-stream' });
+          const input = typeof data === 'string' ? data : JSON.stringify(data);
+          const result = instance.packUSDZ(input);
+          if (!result) return null;
+          const bytes = stringToUint8Array(result);
+          return new Blob([bytes], { type: 'model/vnd.usdz+zip' });
         },
+
         createPrimitive: (type: string, properties: any) => {
-          console.log('WASM: Creating primitive...', type, properties);
-          return { id: Date.now().toString(), type, properties };
+          return instance.createPrimitive(type, properties);
         },
+
         updatePrimitive: (id: string, properties: any) => {
-          console.log('WASM: Updating primitive...', id, properties);
+          instance.updatePrimitive(id, properties);
         },
+
         deletePrimitive: (id: string) => {
-          console.log('WASM: Deleting primitive...', id);
+          instance.deletePrimitive(id);
         },
+
         exportUSDZ: async () => {
-          console.log('WASM: Exporting USDZ...');
-          return new Blob([], { type: 'application/octet-stream' });
-        }
+          const result = instance.exportUSDZ();
+          if (!result) return new Blob([], { type: 'model/vnd.usdz+zip' });
+          const bytes = stringToUint8Array(result);
+          return new Blob([bytes], { type: 'model/vnd.usdz+zip' });
+        },
       };
 
-      setWasmModule(mockModule);
+      setWasmModule(wrappedModule);
       setIsReady(true);
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load WASM module');
     } finally {
@@ -82,7 +163,7 @@ export const useWASM = (): UseWASMReturn => {
     if (!wasmModule) {
       throw new Error('WASM module not ready');
     }
-    
+
     return await wasmModule.unpackUSDZ(usdzData);
   }, [wasmModule]);
 
@@ -92,6 +173,6 @@ export const useWASM = (): UseWASMReturn => {
     error,
     wasmModule,
     initializeWASM,
-    unpackUSDZForEditing
+    unpackUSDZForEditing,
   };
 };
